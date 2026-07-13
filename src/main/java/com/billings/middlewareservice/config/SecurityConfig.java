@@ -26,18 +26,28 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
-                .csrf(AbstractHttpConfigurer::disable)
+                // 1. Explicitly disable CSRF and CORS
+                .csrf(csrf -> csrf.disable())
+                .cors(cors -> cors.disable())
 
-                .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/swagger-ui/**", "/v3/api-docs/**", "/api/v1/public/**").permitAll() // Public
-                        .anyRequest().authenticated()
-                )
-
+                // 2. FORCE stateless session management (Removes JSESSIONID generation)
                 .sessionManagement(session -> session
                         .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
                 )
-                .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
 
+                // 3. Configure endpoint routing rules
+                .authorizeHttpRequests(auth -> auth
+                        .requestMatchers("/swagger-ui/**", "/v3/api-docs/**", "/api/v1/public/**", "/api/v1/customers/**").permitAll()
+                        .anyRequest().authenticated()
+                )
+
+                // 4. Register your Custom Access Denied Handler
+                .exceptionHandling(exception -> exception
+                        .accessDeniedHandler(new CustomAccessDeniedHandler())
+                )
+
+                // 5. UNCOMMENT your JWT filter so it can process your Bearer token!
+                .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
         return http.build();
     }
 }

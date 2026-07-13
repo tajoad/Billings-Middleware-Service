@@ -20,27 +20,25 @@ import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Component
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
     private final String jwtSecret;
 
-    // 2. Added a manual constructor with @Value injection
-    public JwtAuthenticationFilter(@Value("${jwt.secret.key}") String jwtSecret) {
+    public JwtAuthenticationFilter(@Value("${app.jwt.secret}") String jwtSecret) {
         this.jwtSecret = jwtSecret;
     }
+//    public JwtAuthenticationFilter(String jwtSecret) {
+//        this.jwtSecret = jwtSecret;
+//    }
 
     @Override
-    protected boolean shouldNotFilter(HttpServletRequest request) throws ServletException {
-        String path = request.getServletPath();
-        return path.startsWith("/swagger-ui") ||
-                path.startsWith("/v3/api-docs") ||
-                path.startsWith("/api/v1/public/");
-    }
+    protected void doFilterInternal(HttpServletRequest request,
+                                    HttpServletResponse response,
+                                    FilterChain filterChain) throws ServletException, IOException {
 
-    @Override
-    protected void doFilterInternal(@NotNull HttpServletRequest request,@NotNull HttpServletResponse response,@NotNull FilterChain filterChain) throws ServletException, IOException {
         String authHeader = request.getHeader("Authorization");
 
         if (authHeader == null || !authHeader.startsWith("Bearer ")) {
@@ -53,19 +51,18 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         try {
             // Parse and Validate Token
             Claims claims = Jwts.parser()
-                    .verifyWith(Keys.hmacShaKeyFor(jwtSecret.getBytes(StandardCharsets.UTF_8)))
+                    .verifyWith(Keys.hmacShaKeyFor(io.jsonwebtoken.io.Decoders.BASE64.decode(jwtSecret)))
                     .build()
                     .parseSignedClaims(token)
                     .getPayload();
 
-            String userUuid = claims.getSubject(); // User UUID from Auth Service
-
-            // Extract Roles and Permissions from Claims
-            @SuppressWarnings("unchecked")
-            List<String> roles = claims.get("roles", List.class);
+            String userUuid = claims.get("user_id", String.class);
 
             @SuppressWarnings("unchecked")
-            List<String> permissions = claims.get("permissions", List.class);
+            List<String> roles = claims.get("roles", List.class); // e.g., ["ADMIN", "MANAGER"]
+
+            @SuppressWarnings("unchecked")
+            List<String> permissions = claims.get("permissions", List.class); // e.g., ["invoice:create"]
 
             List<SimpleGrantedAuthority> authorities = new ArrayList<>();
 
@@ -78,17 +75,18 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
             if (permissions != null) {
                 permissions.stream()
-                        .map(SimpleGrantedAuthority::new) // No prefix for permissions
+                        .map(SimpleGrantedAuthority::new)
                         .forEach(authorities::add);
             }
 
             UsernamePasswordAuthenticationToken authentication =
                     new UsernamePasswordAuthenticationToken(userUuid, null, authorities);
-
             SecurityContextHolder.getContext().setAuthentication(authentication);
 
         } catch (Exception e) {
             // Token validation failed (expired, tampered, etc.)
+            System.err.println("JWT Verification Filter Failure: " + e.getMessage());
+            e.printStackTrace();
             SecurityContextHolder.clearContext();
         }
 
