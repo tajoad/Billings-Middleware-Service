@@ -104,7 +104,7 @@ CREATE TABLE audit_logs (
     entity_name VARCHAR(100) NOT NULL,
     entity_id UUID NOT NULL,
     action VARCHAR(20) NOT NULL,
-    performed_by UUID NOT NULL,
+    performed_by VARCHAR(100) NOT NULL,
     timestamp TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
     old_values JSONB,
     new_values JSONB
