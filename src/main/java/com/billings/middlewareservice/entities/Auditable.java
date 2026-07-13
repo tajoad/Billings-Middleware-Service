@@ -39,4 +39,10 @@ public abstract class Auditable {
 
     @Column(name = "deleted_at")
     private Instant deletedAt;
+
+    @Column(name = "is_active", nullable = false)
+    private boolean isActive;
+
+    @Column(name = "is_deleted")
+    private boolean isDeleted;
 }

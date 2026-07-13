@@ -34,14 +34,17 @@ CREATE TABLE customers (
 CREATE TABLE items (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     item_code VARCHAR(50) UNIQUE NOT NULL,
-    description VARCHAR(255) NOT NULL,
+    item_name VARCHAR(100) NOT NULL,
+    description TEXT,
     unit_price NUMERIC(15, 4) NOT NULL,
     tax_rate NUMERIC(5, 2) DEFAULT 0.00,
     -- Audit Fields from Base Class
+    is_active BOOLEAN DEFAULT TRUE,
     created_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP,
     created_by VARCHAR(100) NOT NULL,
     updated_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP,
     updated_by VARCHAR(100) NOT NULL,
+    is_deleted BOOLEAN DEFAULT FALSE,
     deleted_at TIMESTAMP WITH TIME ZONE
 );
 
@@ -59,6 +62,8 @@ CREATE TABLE invoices (
     created_by VARCHAR(100) NOT NULL,
     updated_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP,
     updated_by VARCHAR(100) NOT NULL,
+    is_active BOOLEAN DEFAULT TRUE,
+    is_deleted BOOLEAN DEFAULT FALSE,
     deleted_at TIMESTAMP WITH TIME ZONE
 );
 
@@ -78,7 +83,9 @@ CREATE TABLE invoice_lines (
     created_by UUID NOT NULL,
     updated_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP,
     updated_by UUID NOT NULL,
-    deleted_at TIMESTAMP WITH TIME ZONE
+    deleted_at TIMESTAMP WITH TIME ZONE,
+    is_active BOOLEAN DEFAULT TRUE,
+    is_deleted BOOLEAN DEFAULT FALSE
 );
 
 -- 5. PAYMENTS
@@ -95,7 +102,9 @@ CREATE TABLE payments (
     created_by VARCHAR(100) NOT NULL,
     updated_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP,
     updated_by VARCHAR(100) NOT NULL,
-    deleted_at TIMESTAMP WITH TIME ZONE
+    deleted_at TIMESTAMP WITH TIME ZONE,
+    is_active BOOLEAN DEFAULT TRUE,
+    is_deleted BOOLEAN DEFAULT FALSE
 );
 
 -- 6. AUDIT LOGS (Remains unchanged as your centralized JSON change log)

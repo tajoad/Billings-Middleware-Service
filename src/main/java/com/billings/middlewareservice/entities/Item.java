@@ -21,7 +21,10 @@ public class Item extends Auditable {
     @Column(name = "item_code", unique = true, nullable = false)
     private String itemCode;
 
-    @Column(nullable = false)
+    @Column(name = "item_name", nullable = false, length = 100)
+    private String name;
+
+    @Column(columnDefinition = "TEXT")
     private String description;
 
     @Column(name = "unit_price", nullable = false, precision = 15, scale = 4)

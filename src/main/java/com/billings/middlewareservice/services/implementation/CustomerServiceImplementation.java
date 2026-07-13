@@ -2,17 +2,20 @@ package com.billings.middlewareservice.services.implementation;
 
 import com.billings.middlewareservice.dtos.requests.CustomerRequestDto;
 import com.billings.middlewareservice.dtos.response.CustomerResponseDto;
+import com.billings.middlewareservice.dtos.response.ItemResponseDto;
 import com.billings.middlewareservice.entities.Customer;
 import com.billings.middlewareservice.enums.CustomerTypes;
 import com.billings.middlewareservice.event.AuditEvent;
 import com.billings.middlewareservice.repositories.CustomerRepository;
 import com.billings.middlewareservice.services.CustomerService;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
@@ -22,6 +25,7 @@ public class CustomerServiceImplementation implements CustomerService {
 
     public final CustomerRepository customerRepository;
     private final ApplicationEventPublisher eventPublisher;
+    private final ObjectMapper objectMapper;
     @Override
     public CustomerResponseDto createCustomer(CustomerRequestDto request) {
         if (request.customerType() == CustomerTypes.BUSINESS) {
@@ -46,7 +50,6 @@ public class CustomerServiceImplementation implements CustomerService {
                 .country(request.country() == null || request.country().isBlank() ? "Nigeria" : request.country())
                 .email(request.email())
                 .phoneNumber(request.phoneNumber())
-                .isActive(true)
                 .build();
 
         Customer savedCustomer = customerRepository.save(customer);
@@ -78,7 +81,7 @@ public class CustomerServiceImplementation implements CustomerService {
     @Override
     public CustomerResponseDto updateCustomer(UUID id, CustomerRequestDto request) {
         Customer customer = customerRepository.findById(id)
-                .filter(Customer::getIsActive)
+                .filter(Customer::isActive)
                 .orElseThrow(() -> new IllegalArgumentException("Active customer record not found for ID: " + id));
 
         if (request.customerType() == CustomerTypes.BUSINESS) {
@@ -90,18 +93,8 @@ public class CustomerServiceImplementation implements CustomerService {
             }
         }
 
-        java.util.Map<String, Object> oldStateSnapshot = java.util.Map.of(
-                "name", customer.getName(),
-                "email", customer.getEmail(),
-                "customerType", customer.getCustomerType(),
-                "tin",customer.getTin(),
-                "addressLine1", customer.getAddressLine1(),
-                "addressLine2", customer.getAddressLine2(),
-                "city", customer.getCity(),
-                "companyName", customer.getCompanyName(),
-                "phoneNumber", customer.getPhoneNumber(),
-                "isActive", customer.getIsActive()
-        );
+        CustomerResponseDto oldDto = mapToCustomerResponse(customer);
+        Map<String, Object> oldStateSnapshot = objectMapper.convertValue(oldDto, java.util.Map.class);
 
         customer.setName(request.name());
         customer.setCustomerType(request.customerType());
@@ -135,11 +128,11 @@ public class CustomerServiceImplementation implements CustomerService {
     @Override
     public void deleteCustomer(UUID id) {
         Customer customer = customerRepository.findById(id)
-                .filter(Customer::getIsActive)
+                .filter(Customer::isActive)
                 .orElseThrow(() -> new IllegalArgumentException("Active customer record not found for ID: " + id));
 
         // Perform Soft Delete
-        customer.setIsActive(false);
+        customer.setActive(false);
         customer.setDeletedAt(java.time.Instant.now());
 
         Customer deletedCustomer = customerRepository.save(customer);
@@ -177,7 +170,7 @@ public class CustomerServiceImplementation implements CustomerService {
                 fullAddress,
                 customer.getEmail(),
                 customer.getPhoneNumber(),
-                customer.getIsActive()
+                customer.isActive()
         );
     }
 }

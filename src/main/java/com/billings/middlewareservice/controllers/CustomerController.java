@@ -27,9 +27,6 @@ public class CustomerController {
     public ResponseEntity<ApiResponseDto<CustomerResponseDto>> createCustomer(
             @Valid @RequestBody CustomerRequestDto request) {
 
-        System.out.println("Current User Authorities: " +
-                SecurityContextHolder.getContext().getAuthentication().getAuthorities());
-
         CustomerResponseDto createdCustomer = customerService.createCustomer(request);
 
         return ResponseEntity
