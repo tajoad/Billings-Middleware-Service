@@ -54,7 +54,7 @@ public class CustomerServiceImplementation implements CustomerService {
                 "CUSTOMER",
                 savedCustomer.getId(),
                 "INSERT",
-                savedCustomer.getCreatedBy(), // Set automatically by Auditing Layer
+                savedCustomer.getCreatedBy(),
                 null,
                 savedCustomer
         ));

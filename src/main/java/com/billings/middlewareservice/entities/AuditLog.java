@@ -5,6 +5,7 @@ import lombok.*;
 import org.hibernate.annotations.JdbcTypeCode;
 import org.hibernate.type.SqlTypes;
 
+import java.sql.Types;
 import java.time.Instant;
 import java.util.UUID;
 
@@ -19,7 +20,7 @@ public class AuditLog {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+    private UUID id;
 
     @Column(name = "entity_name", nullable = false)
     private String entityName; // e.g., "INVOICE", "CUSTOMER"
@@ -30,7 +31,7 @@ public class AuditLog {
     @Column(nullable = false)
     private String action; // INSERT, UPDATE, DELETE
 
-    @Column(name = "performed_by", nullable = false)
+    @Column(name = "performed_by")
     private String performedBy;
 
     @Builder.Default
