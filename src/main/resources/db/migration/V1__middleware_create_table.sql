@@ -21,6 +21,7 @@ CREATE TABLE customers (
     email VARCHAR(100),
     phone_number VARCHAR(50),
     is_active BOOLEAN DEFAULT TRUE,
+    is_deleted BOOLEAN DEFAULT FALSE,
 
     -- Audit Fields from Auditable base class
     created_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP,
@@ -57,6 +58,7 @@ CREATE TABLE invoices (
     gross_amount NUMERIC(15, 4) NOT NULL DEFAULT 0.0000,
     tax_amount NUMERIC(15, 4) NOT NULL DEFAULT 0.0000,
     net_amount NUMERIC(15, 4) NOT NULL DEFAULT 0.0000,
+    amount_paid NUMERIC(15, 4) NOT NULL DEFAULT 0.0000,
     -- Audit Fields from Base Class
     created_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP,
     created_by VARCHAR(100) NOT NULL,
@@ -80,9 +82,9 @@ CREATE TABLE invoice_lines (
     line_net_amount NUMERIC(15, 4) NOT NULL,
     -- Audit Fields from Base Class
     created_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    created_by UUID NOT NULL,
+    created_by VARCHAR(100) NOT NULL,
     updated_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    updated_by UUID NOT NULL,
+    updated_by VARCHAR(100) NOT NULL,
     deleted_at TIMESTAMP WITH TIME ZONE,
     is_active BOOLEAN DEFAULT TRUE,
     is_deleted BOOLEAN DEFAULT FALSE

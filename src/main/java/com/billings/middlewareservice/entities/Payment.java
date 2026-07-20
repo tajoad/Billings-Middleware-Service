@@ -1,5 +1,7 @@
 package com.billings.middlewareservice.entities;
 
+import com.billings.middlewareservice.enums.PaymentMethod;
+import com.billings.middlewareservice.enums.PaymentStatus;
 import jakarta.persistence.*;
 import lombok.*;
 import java.math.BigDecimal;
@@ -30,10 +32,10 @@ public class Payment extends Auditable {
     private BigDecimal amountPaid;
 
     @Column(name = "payment_method", nullable = false)
-    private String paymentMethod; // CARD, TRANSFER, USSD
+    private PaymentMethod paymentMethod; // CARD, TRANSFER, USSD
 
     @Column(nullable = false)
-    private String status; // PENDING, SUCCESSFUL, FAILED
+    private PaymentStatus status; // PENDING, SUCCESSFUL, FAILED
 
     @Column(name = "processed_at")
     private Instant processedAt;
