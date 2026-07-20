@@ -1,5 +1,6 @@
 package com.billings.middlewareservice.entities;
 
+import com.billings.middlewareservice.enums.InvoiceStatus;
 import jakarta.persistence.*;
 import lombok.*;
 import java.math.BigDecimal;
@@ -28,7 +29,7 @@ public class Invoice extends Auditable {
     private Customer customer;
 
     @Column(nullable = false)
-    private String status; // DRAFT, APPROVED, PAID, CANCELLED
+    private InvoiceStatus status; // DRAFT, APPROVED, PAID, CANCELLED
 
     @Column(name = "gross_amount", nullable = false, precision = 15, scale = 4)
     private BigDecimal grossAmount = BigDecimal.ZERO;
@@ -39,6 +40,10 @@ public class Invoice extends Auditable {
     @Column(name = "net_amount", nullable = false, precision = 15, scale = 4)
     private BigDecimal netAmount = BigDecimal.ZERO;
 
+    @Column(name = "amount_paid", nullable = false, precision = 15, scale = 4)
+    @Builder.Default
+    private BigDecimal amountPaid = BigDecimal.ZERO;
+
     @OneToMany(mappedBy = "invoice", cascade = CascadeType.ALL, orphanRemoval = true)
     @Builder.Default
     private List<InvoiceLine> lines = new ArrayList<>();
@@ -47,5 +52,14 @@ public class Invoice extends Auditable {
     public void addLine(InvoiceLine line) {
         lines.add(line);
         line.setInvoice(this);
+    }
+
+    @OneToMany(mappedBy = "invoice", cascade = CascadeType.ALL, orphanRemoval = true)
+    @Builder.Default
+    private List<Payment> payments = new ArrayList<>();
+
+    public void addPayment(Payment payment) {
+        payments.add(payment);
+        payment.setInvoice(this);
     }
 }

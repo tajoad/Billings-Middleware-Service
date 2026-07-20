@@ -30,7 +30,7 @@ public class CustomerServiceImplementation implements CustomerService {
     public CustomerResponseDto createCustomer(CustomerRequestDto request) {
         if (request.customerType() == CustomerTypes.BUSINESS) {
             if (request.companyName() == null || request.companyName().isBlank()) {
-                throw new IllegalArgumentException("Company Name is required for corporate customers.");
+                throw new IllegalArgumentException ("Company Name is required for corporate customers.");
             }
             if (request.tin() == null || request.tin().isBlank()) {
                 throw new IllegalArgumentException("Tax Identification Number (TIN) is required for corporate customers.");
